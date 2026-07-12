@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>V30 Sniper Control</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh;padding:12px;max-width:420px;margin:0 auto}
+.header{text-align:center;padding:16px 0;border-bottom:1px solid #30363d;margin-bottom:16px}
+.header h1{color:#58a6ff;font-size:22px;margin-bottom:4px}
+.header .status{font-size:12px;color:#8b949e}
+.signal-box{text-align:center;padding:24px;border-radius:16px;margin-bottom:16px;font-size:28px;font-weight:700;transition:all .3s}
+.signal-call{background:#23863633;color:#3fb950;border:2px solid #238636}
+.signal-put{background:#da363333;color:#f85149;border:2px solid #da3633}
+.signal-wait{background:#21262d;color:#8b949e;border:2px solid #30363d}
+.signal-analyse{background:#d2992233;color:#d29922;border:2px solid #d29922}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.btn{border:none;border-radius:14px;padding:16px 8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .12s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.btn:active{transform:scale(.94)}
+.btn .icon{font-size:22px}
+.btn .label{font-size:10px;opacity:.8;font-weight:500}
+.btn-green{background:linear-gradient(135deg,#238636,#2ea043);color:#fff}
+.btn-red{background:linear-gradient(135deg,#da3633,#f85149);color:#fff}
+.btn-blue{background:linear-gradient(135deg,#1f6feb,#58a6ff);color:#fff}
+.btn-orange{background:linear-gradient(135deg,#d29922,#e3b341);color:#000}
+.btn-purple{background:linear-gradient(135deg,#8957e5,#a371f7);color:#fff}
+.btn-gray{background:#30363d;color:#c9d1d9}
+.btn-cyan{background:linear-gradient(135deg,#39d0d8,#56d4dd);color:#000}
+.btn-full{grid-column:1/-1;padding:18px;font-size:15px}
+.btn-big{padding:20px;font-size:15px}
+.section{background:#161b22;border-radius:16px;padding:16px;margin-bottom:14px;border:1px solid #30363d}
+.section-title{font-size:12px;font-weight:700;color:#8b949e;margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px}
+.input-group{display:flex;gap:8px;margin-bottom:10px;align-items:center}
+.input-group label{font-size:12px;min-width:55px;color:#8b949e;font-weight:600}
+.input-group input{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 12px;color:#c9d1d9;font-size:14px;width:90px;font-weight:600;text-align:center}
+.input-group input:focus{outline:none;border-color:#58a6ff;box-shadow:0 0 0 3px rgba(88,166,255,.15)}
+.input-group .btn-ok{padding:10px 16px;font-size:12px;border-radius:10px}
+.pos-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;font-size:10px;margin-bottom:12px}
+.pos-item{background:#0d1117;padding:10px 4px;border-radius:10px;text-align:center;border:1px solid #21262d}
+.pos-item .name{color:#8b949e;font-size:9px;margin-bottom:4px}
+.pos-item .val{color:#3fb950;font-weight:700;font-size:11px}
+.pos-item .val.missing{color:#f85149}
+.pos-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pos-btn-grid .btn{padding:12px 4px;font-size:11px;border-radius:10px}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
+.stat-item{background:#0d1117;padding:14px 4px;border-radius:12px;border:1px solid #21262d}
+.stat-item .num{font-size:20px;font-weight:800;color:#58a6ff}
+.stat-item .lbl{color:#8b949e;margin-top:4px;font-size:10px;font-weight:600}
+.timer-display{text-align:center;padding:16px;background:#0d1117;border-radius:12px;margin-bottom:10px;border:1px solid #21262d}
+.timer-display .time{font-size:36px;font-weight:800;color:#58a6ff;font-variant-numeric:tabular-nums;line-height:1}
+.timer-display .label{font-size:11px;color:#8b949e;margin-top:6px;font-weight:600}
+.logs{max-height:180px;overflow-y:auto;font-size:11px;line-height:1.7;padding:10px;background:#0d1117;border-radius:10px;border:1px solid #21262d}
+.logs .log-item{padding:4px 0;border-bottom:1px solid #1c2128}
+.logs .log-time{color:#484f58;margin-right:8px;font-size:10px;font-weight:600}
+.logs .log-msg{color:#c9d1d9}
+.logs .log-green{color:#3fb950}
+.logs .log-red{color:#f85149}
+.logs .log-yellow{color:#d29922}
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:#238636;color:#fff;padding:14px 28px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.4);white-space:nowrap}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.error{background:#da3633}
+.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#0d1117;border-radius:12px;margin-bottom:8px;border:1px solid #21262d}
+.toggle-row .label{font-size:13px;font-weight:600}
+.toggle-switch{width:52px;height:28px;background:#30363d;border-radius:14px;position:relative;cursor:pointer;transition:.2s}
+.toggle-switch.on{background:#238636}
+.toggle-switch::after{content:'';position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+.toggle-switch.on::after{left:27px}
+.connection-badge{display:inline-flex;align-items:center;gap:6px;background:#23863622;color:#3fb950;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid #23863644}
+.connection-badge.off{background:#da363322;color:#f85149;border-color:#da363344}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🚀 V30 SNIPER</h1>
+  <div class="status">
+    <span class="connection-badge" id="connBadge">🟢 Connecté</span>
+    <span id="statusText">En attente...</span>
+  </div>
+</div>
+
+<!-- SIGNAL EN GRAND -->
+<div class="signal-box signal-wait" id="signalBox">
+  <div>EN ATTENTE</div>
+  <div style="font-size:14px;font-weight:500;margin-top:8px;opacity:.7" id="signalDetail">Appuie sur START</div>
+</div>
+
+<!-- BOUTONS PRINCIPAUX -->
+<div class="grid">
+  <button class="btn btn-green btn-big" onclick="sendCmd('start')">
+    <span class="icon">▶️</span>
+    <span>START</span>
+  </button>
+  <button class="btn btn-red btn-big" onclick="sendCmd('stop')">
+    <span class="icon">⏹️</span>
+    <span>STOP</span>
+  </button>
+  <button class="btn btn-blue btn-full" onclick="sendCmd('signal')">
+    <span class="icon">🎯</span>
+    <span>DEMANDER SIGNAL NOW</span>
+  </button>
+</div>
+
+<!-- ACTIONS RAPIDES -->
+<div class="section">
+  <div class="section-title">⚡ Actions Rapides</div>
+  <div class="grid">
+    <button class="btn btn-orange" onclick="sendCmd('reset')">
+      <span class="icon">🔄</span>
+      <span>RESET</span>
+      <span class="label">Nouvelle paire</span>
+    </button>
+    <button class="btn btn-cyan" onclick="sendCmd('status')">
+      <span class="icon">📊</span>
+      <span>STATUS</span>
+    </button>
+    <button class="btn btn-gray" onclick="sendCmd('testcall')">
+      <span class="icon">🧪</span>
+      <span>TEST CALL</span>
+    </button>
+    <button class="btn btn-gray" onclick="sendCmd('testput')">
+      <span class="icon">🧪</span>
+      <span>TEST PUT</span>
+    </button>
+  </div>
+
+  <!-- Toggle Auto-Click -->
+  <div class="toggle-row" style="margin-top:10px" onclick="toggleAutoClick()">
+    <span class="label">🖱️ Clics Automatiques</span>
+    <div class="toggle-switch on" id="autoClickToggle"></div>
+  </div>
+</div>
+
+<!-- POSITIONS -->
+<div class="section">
+  <div class="section-title">📍 Positions Clics Auto</div>
+  <div class="pos-grid" id="posGrid">
+    <div class="pos-item"><div class="name">CALL</div><div class="val missing" id="posCall">❌</div></div>
+    <div class="pos-item"><div class="name">PUT</div><div class="val missing" id="posPut">❌</div></div>
+    <div class="pos-item"><div class="name">MENU</div><div class="val missing" id="posMenu">❌</div></div>
+    <div class="pos-item"><div class="name">1MIN</div><div class="val missing" id="pos1min">❌</div></div>
+    <div class="pos-item"><div class="name">2MIN</div><div class="val missing" id="pos2min">❌</div></div>
+  </div>
+  <div class="pos-btn-grid">
+    <button class="btn btn-green" onclick="setPos('call')">📍 SET CALL</button>
+    <button class="btn btn-red" onclick="setPos('put')">📍 SET PUT</button>
+    <button class="btn btn-orange" onclick="setPos('menu')">📍 SET MENU</button>
+    <button class="btn btn-blue" onclick="setPos('1min')">📍 SET 1MIN</button>
+    <button class="btn btn-purple" onclick="setPos('2min')" style="grid-column:1/-1">📍 SET 2MIN</button>
+  </div>
+  <div style="margin-top:10px;font-size:11px;color:#8b949e;text-align:center" id="posHint">
+    Place ton curseur sur le bouton, puis appuie sur le bouton ci-dessus
+  </div>
+</div>
+
+<!-- TIMERS -->
+<div class="section">
+  <div class="section-title">⏱️ Timers Configurables</div>
+
+  <div class="timer-display">
+    <div class="time" id="countdownDisplay">--:--</div>
+    <div class="label" id="countdownLabel">Prochain signal dans</div>
+  </div>
+
+  <div class="input-group">
+    <label>1MIN:</label>
+    <input type="number" id="timer1" value="58" min="0">
+    <button class="btn btn-blue btn-ok" onclick="setTimer('1min')">✓</button>
+  </div>
+  <div class="input-group">
+    <label>2MIN:</label>
+    <input type="number" id="timer2" value="118" min="0">
+    <button class="btn btn-blue btn-ok" onclick="setTimer('2min')">✓</button>
+  </div>
+  <div class="input-group">
+    <label>PLAT:</label>
+    <input type="number" id="timerPlat" value="5" min="0">
+    <button class="btn btn-blue btn-ok" onclick="setTimer('plat')">✓</button>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="section">
+  <div class="section-title">📊 Stats Session</div>
+  <div class="stats-grid">
+    <div class="stat-item"><div class="num" id="statPrix">0</div><div class="lbl">PRIX LUS</div></div>
+    <div class="stat-item"><div class="num" id="statSig">0</div><div class="lbl">SIGNAUX</div></div>
+    <div class="stat-item"><div class="num" id="statRef">0</div><div class="lbl">REFUSÉS</div></div>
+    <div class="stat-item"><div class="num" id="statErr">0</div><div class="lbl">ERREURS</div></div>
+  </div>
+</div>
+
+<!-- LOGS -->
+<div class="section">
+  <div class="section-title">📝 Logs Temps Réel</div>
+  <div class="logs" id="logs"></div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ==========================================
+// TELEGRAM WEB APP INIT
+// ==========================================
+const tg = window.Telegram.WebApp;
+tg.expand();
+tg.ready();
+tg.enableClosingConfirmation();
+
+// ==========================================
+// ÉTAT
+// ==========================================
+let autoClick = true;
+let positions = {call:null, put:null, menu:null, min1:null, min2:null};
+let logs = [];
+let isRunning = false;
+let countdownValue = 0;
+let countdownInterval = null;
+
+// ==========================================
+// FONCTIONS UTILITAIRES
+// ==========================================
+function sendCmd(cmd, extra={}) {
+  const data = JSON.stringify({action: cmd, ...extra});
+
+  // Envoyer au bot via Telegram
+  if (tg.initDataUnsafe && tg.initDataUnsafe.query_id) {
+    tg.sendData(data);
+  }
+
+  // Feedback visuel
+  showToast(cmd.toUpperCase() + ' envoyé!');
+  addLog('→ Commande: ' + cmd);
+
+  // Haptic feedback
+  tg.HapticFeedback.impactOccurred('light');
+}
+
+function setTimer(type) {
+  const val = document.getElementById(type==='1min'?'timer1':type==='2min'?'timer2':'timerPlat').value;
+  sendCmd('timer' + type, {value: parseInt(val)});
+  showToast('⏱️ Timer ' + type + ' = ' + val + 's');
+}
+
+function setPos(type) {
+  tg.HapticFeedback.impactOccurred('medium');
+
+  // Récupérer la position actuelle de la souris
+  // Note: impossible de récupérer la position souris sans event,
+  // donc on demande à l'utilisateur de confirmer
+  showToast('Place le curseur sur ' + type.toUpperCase() + ' et confirme', 3000);
+
+  // Créer un overlay pour capturer le clic
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;cursor:crosshair;background:rgba(13,17,23,0.7)';
+  overlay.innerHTML = '<div style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#161b22;padding:20px 30px;border-radius:16px;border:2px solid #58a6ff;text-align:center"><div style="font-size:32px;margin-bottom:10px">🖱️</div><div style="font-size:16px;font-weight:700;color:#58a6ff">Clique sur ' + type.toUpperCase() + '</div><div style="font-size:12px;color:#8b949e;margin-top:8px">Puis reviens ici</div></div>';
+
+  overlay.addEventListener('click', function(e) {
+    const x = Math.round(e.clientX * window.devicePixelRatio);
+    const y = Math.round(e.clientY * window.devicePixelRatio);
+
+    positions[type] = {x, y};
+    updatePositionsDisplay();
+
+    sendCmd('setpos', {type: type, x: x, y: y});
+    showToast('✅ ' + type.toUpperCase() + ' (' + x + ',' + y + ')');
+
+    document.body.removeChild(overlay);
+    tg.HapticFeedback.notificationOccurred('success');
+  });
+
+  document.body.appendChild(overlay);
+}
+
+function toggleAutoClick() {
+  autoClick = !autoClick;
+  const toggle = document.getElementById('autoClickToggle');
+  toggle.classList.toggle('on', autoClick);
+
+  sendCmd('autoclick', {value: autoClick});
+  showToast('🖱️ Auto-click: ' + (autoClick ? 'ON' : 'OFF'));
+  tg.HapticFeedback.impactOccurred('light');
+}
+
+function showToast(msg, duration=2000) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show';
+  setTimeout(() => t.className = '', duration);
+}
+
+function addLog(msg, type='info') {
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + 
+               now.getMinutes().toString().padStart(2,'0') + ':' + 
+               now.getSeconds().toString().padStart(2,'0');
+
+  logs.unshift({time, msg, type});
+  if(logs.length > 50) logs.pop();
+
+  renderLogs();
+}
+
+function renderLogs() {
+  const container = document.getElementById('logs');
+  container.innerHTML = logs.map(l => {
+    let cls = 'log-msg';
+    if(l.type==='green') cls='log-green';
+    else if(l.type==='red') cls='log-red';
+    else if(l.type==='yellow') cls='log-yellow';
+    return '<div class="log-item"><span class="log-time">[' + l.time + ']</span><span class="' + cls + '">' + escapeHtml(l.msg) + '</span></div>';
+  }).join('');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function updatePositionsDisplay() {
+  const map = {call:'posCall', put:'posPut', menu:'posMenu', min1:'pos1min', min2:'pos2min'};
+  for(const [key, id] of Object.entries(map)) {
+    const el = document.getElementById(id);
+    if(positions[key]) {
+      el.textContent = positions[key].x + ',' + positions[key].y;
+      el.className = 'val';
+    } else {
+      el.textContent = '❌';
+      el.className = 'val missing';
+    }
+  }
+
+  const allSet = positions.call && positions.put && positions.menu && positions.min1 && positions.min2;
+  document.getElementById('posHint').textContent = allSet 
+    ? '✅ Toutes les positions sont configurées!'
+    : 'Place ton curseur sur le bouton, puis appuie sur le bouton ci-dessus';
+  document.getElementById('posHint').style.color = allSet ? '#3fb950' : '#8b949e';
+}
+
+function updateSignalBox(direction, actif, detail) {
+  const box = document.getElementById('signalBox');
+  const det = document.getElementById('signalDetail');
+
+  if(direction==='ACHAT' || direction==='CALL') {
+    box.className = 'signal-box signal-call';
+    box.innerHTML = '<div>🟢 ACHAT</div>';
+  } else if(direction==='VENTE' || direction==='PUT') {
+    box.className = 'signal-box signal-put';
+    box.innerHTML = '<div>🔴 VENTE</div>';
+  } else if(direction==='ANALYSE') {
+    box.className = 'signal-box signal-analyse';
+    box.innerHTML = '<div>⏳ ANALYSE...</div>';
+  } else if(direction==='RESET') {
+    box.className = 'signal-box signal-wait';
+    box.innerHTML = '<div>🔄 RESET</div>';
+  } else {
+    box.className = 'signal-box signal-wait';
+    box.innerHTML = '<div>EN ATTENTE</div>';
+  }
+
+  if(detail) {
+    det.textContent = detail;
+    det.style.display = 'block';
+  }
+}
+
+function updateStats(data) {
+  if(data.prix_lus !== undefined) document.getElementById('statPrix').textContent = data.prix_lus;
+  if(data.signaux_envoyes !== undefined) document.getElementById('statSig').textContent = data.signaux_envoyes;
+  if(data.signaux_refuses !== undefined) document.getElementById('statRef').textContent = data.signaux_refuses;
+  if(data.erreurs !== undefined) document.getElementById('statErr').textContent = data.erreurs;
+
+  if(data.dernier_signal) {
+    if(data.dernier_signal.includes('ACHAT')) updateSignalBox('ACHAT', null, data.dernier_signal);
+    else if(data.dernier_signal.includes('VENTE')) updateSignalBox('VENTE', null, data.dernier_signal);
+  }
+
+  if(data.actif_actuel) {
+    document.getElementById('statusText').textContent = data.actif_actuel + ' | ' + (data.tendance_actuelle || 'NEUTRE');
+  }
+
+  if(data.is_running !== undefined) {
+    isRunning = data.is_running;
+    document.getElementById('connBadge').textContent = isRunning ? '🟢 En cours' : '🔴 Arrêté';
+    document.getElementById('connBadge').className = isRunning ? 'connection-badge' : 'connection-badge off';
+  }
+}
+
+function startCountdown(seconds, label) {
+  if(countdownInterval) clearInterval(countdownInterval);
+  countdownValue = seconds;
+  document.getElementById('countdownLabel').textContent = label || 'Prochain signal dans';
+
+  function tick() {
+    if(countdownValue <= 0) {
+      document.getElementById('countdownDisplay').textContent = 'GO!';
+      document.getElementById('countdownDisplay').style.color = '#3fb950';
+      clearInterval(countdownInterval);
+      return;
+    }
+    const m = Math.floor(countdownValue / 60);
+    const s = countdownValue % 60;
+    document.getElementById('countdownDisplay').textContent = 
+      (m > 0 ? m + ':' : '') + s.toString().padStart(2, '0');
+    document.getElementById('countdownDisplay').style.color = countdownValue < 10 ? '#f85149' : '#58a6ff';
+    countdownValue--;
+  }
+
+  tick();
+  countdownInterval = setInterval(tick, 1000);
+}
+
+// ==========================================
+// SIMULATION DE RÉCEPTION DE DONNÉES
+// (En production, le bot enverrait des mises à jour)
+// ==========================================
+function simulateBotUpdate() {
+  // Cette fonction simule les données du bot
+  // En vrai, le bot enverrait via tg.sendData() ou WebSocket
+}
+
+// ==========================================
+// EVENT LISTENERS
+// ==========================================
+tg.onEvent('viewportChanged', () => tg.expand());
+
+// Recevoir données du bot (si le bot répond)
+// Note: tg.receiveData n'existe pas, c'est unidirectionnel
+// Le bot doit envoyer des messages que l'app affiche
+
+// ==========================================
+// INIT
+// ==========================================
+addLog('Mini App V30 chargée', 'green');
+addLog('Prête — Appuie sur START', 'yellow');
+updatePositionsDisplay();
+
+// Définir la couleur du header Telegram
+tg.setHeaderColor('#0d1117');
+</script>
+</body>
+</html>
