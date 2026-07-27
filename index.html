@@ -3,349 +3,217 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>V30 Control</title>
+<title>V30 DEBUG</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1117;color:#c9d1d9;min-height:100vh;padding:12px;max-width:420px;margin:0 auto}
-.header{text-align:center;padding:16px 0;border-bottom:1px solid #30363d;margin-bottom:16px}
-.header h1{color:#58a6ff;font-size:22px;margin-bottom:4px}
-.header .status{font-size:12px;color:#8b949e}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
-.btn{border:none;border-radius:14px;padding:16px 8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .12s;touch-action:manipulation;-webkit-tap-highlight-color:transparent;display:flex;flex-direction:column;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,.3)}
-.btn:active{transform:scale(.94)}
-.btn-green{background:linear-gradient(135deg,#238636,#2ea043);color:#fff}
-.btn-red{background:linear-gradient(135deg,#da3633,#f85149);color:#fff}
-.btn-blue{background:linear-gradient(135deg,#1f6feb,#58a6ff);color:#fff}
-.btn-orange{background:linear-gradient(135deg,#d29922,#e3b341);color:#000}
-.btn-purple{background:linear-gradient(135deg,#8957e5,#a371f7);color:#fff}
-.btn-gray{background:#30363d;color:#c9d1d9}
-.btn-cyan{background:linear-gradient(135deg,#39d0d8,#56d4dd);color:#000}
-.btn-full{grid-column:1/-1;padding:18px;font-size:15px}
-.btn-big{padding:20px;font-size:15px}
-.btn .icon{font-size:22px}
-.btn .label{font-size:10px;opacity:.8;font-weight:500}
-.section{background:#161b22;border-radius:16px;padding:16px;margin-bottom:14px;border:1px solid #30363d}
-.section-title{font-size:12px;font-weight:700;color:#8b949e;margin-bottom:12px;text-transform:uppercase;letter-spacing:.8px}
-.input-group{display:flex;gap:8px;margin-bottom:10px;align-items:center}
-.input-group label{font-size:12px;min-width:55px;color:#8b949e;font-weight:600}
-.input-group input{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:10px 12px;color:#c9d1d9;font-size:14px;width:90px;font-weight:600;text-align:center}
-.input-group input:focus{outline:none;border-color:#58a6ff;box-shadow:0 0 0 3px rgba(88,166,255,.15)}
-.input-group .btn-ok{padding:10px 16px;font-size:12px;border-radius:10px}
-.pos-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;font-size:10px;margin-bottom:12px}
-.pos-item{background:#0d1117;padding:10px 4px;border-radius:10px;text-align:center;border:1px solid #21262d}
-.pos-item .name{color:#8b949e;font-size:9px;margin-bottom:4px}
-.pos-item .val{color:#3fb950;font-weight:700;font-size:11px}
-.pos-item .val.missing{color:#f85149}
-.pos-btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.pos-btn-grid .btn{padding:12px 4px;font-size:11px;border-radius:10px}
-.timer-display{text-align:center;padding:16px;background:#0d1117;border-radius:12px;margin-bottom:10px;border:1px solid #21262d}
-.timer-display .time{font-size:36px;font-weight:800;color:#58a6ff;font-variant-numeric:tabular-nums;line-height:1}
-.timer-display .label{font-size:11px;color:#8b949e;margin-top:6px;font-weight:600}
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;text-align:center}
-.stat-item{background:#0d1117;padding:14px 4px;border-radius:12px;border:1px solid #21262d}
-.stat-item .num{font-size:20px;font-weight:800;color:#58a6ff}
-.stat-item .lbl{color:#8b949e;margin-top:4px;font-size:10px;font-weight:600}
-.signal-box{text-align:center;padding:24px;border-radius:16px;margin-bottom:16px;font-size:28px;font-weight:700;transition:all .3s}
-.signal-call{background:#23863633;color:#3fb950;border:2px solid #238636}
-.signal-put{background:#da363333;color:#f85149;border:2px solid #da3633}
-.signal-wait{background:#21262d;color:#8b949e;border:2px solid #30363d}
-.signal-analyse{background:#d2992233;color:#d29922;border:2px solid #d29922}
-.logs{max-height:150px;overflow-y:auto;font-size:11px;line-height:1.7;padding:10px;background:#0d1117;border-radius:10px;border:1px solid #21262d}
-.logs .log-item{padding:3px 0;border-bottom:1px solid #1c2128}
-.logs .log-time{color:#484f58;margin-right:6px;font-size:10px;font-weight:600}
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:#238636;color:#fff;padding:14px 28px;border-radius:14px;font-size:13px;font-weight:700;opacity:0;transition:all .35s cubic-bezier(.34,1.56,.64,1);z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.4);white-space:nowrap}
-#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-#toast.error{background:#da3633}
-.toggle-row{display:flex;justify-content:space-between;align-items:center;padding:12px;background:#0d1117;border-radius:12px;margin-bottom:8px;border:1px solid #21262d}
-.toggle-row .label{font-size:13px;font-weight:600}
-.toggle-switch{width:52px;height:28px;background:#30363d;border-radius:14px;position:relative;cursor:pointer;transition:.2s}
-.toggle-switch.on{background:#238636}
-.toggle-switch::after{content:'';position:absolute;width:22px;height:22px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s;box-shadow:0 2px 4px rgba(0,0,0,.3)}
-.toggle-switch.on::after{left:27px}
-.connection-badge{display:inline-flex;align-items:center;gap:6px;background:#23863622;color:#3fb950;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;border:1px solid #23863644}
-.connection-badge.off{background:#da363322;color:#f85149;border-color:#da363344}
-.info-box{background:#1f6feb15;border:1px solid #1f6feb44;border-radius:12px;padding:14px;margin-bottom:16px;font-size:12px;line-height:1.7;color:#58a6ff}
-.info-box strong{color:#fff}
+.header{text-align:center;padding:12px 0;border-bottom:2px solid #e94560;margin-bottom:12px}
+.header h1{color:#e94560;font-size:20px}
+.header p{color:#8b949e;font-size:11px}
+.debug-box{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:12px;margin-bottom:12px;font-size:11px;line-height:1.8}
+.debug-box h3{color:#e94560;font-size:13px;margin-bottom:8px}
+.status-line{padding:4px 0;border-bottom:1px solid #21262d}
+.status-ok{color:#3fb950;font-weight:600}
+.status-ko{color:#f85149;font-weight:600}
+.status-warn{color:#d29922}
+.btn{border:none;border-radius:12px;padding:16px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;width:100%;margin-bottom:8px}
+.btn-green{background:#238636}
+.btn-red{background:#da3633}
+.btn-blue{background:#1f6feb}
+.btn-orange{background:#d29922;color:#000}
+#console{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:10px;font-size:10px;line-height:1.6;max-height:200px;overflow-y:auto;font-family:monospace}
+#console .ok{color:#3fb950}
+#console .err{color:#f85149}
+#console .info{color:#58a6ff}
 </style>
 <base target="_blank">
 </head>
 <body>
 
 <div class="header">
-  <h1>🚀 V30 SNIPER</h1>
-  <div class="status">
-    <span class="connection-badge" id="connBadge">🟢 Prêt</span>
-    <span id="statusText">En attente...</span>
-  </div>
+  <h1>🐛 V30 DEBUG MODE</h1>
+  <p>Mode diagnostic — les erreurs s'affichent ci-dessous</p>
 </div>
 
-<div class="info-box">
-  <strong>ℹ️ Comment ça marche:</strong><br>
-  1. Clique sur un bouton ci-dessous<br>
-  2. La commande est envoyée au bot<br>
-  3. <strong>Cette fenêtre se ferme</strong> (normal)<br>
-  4. Le bot répond dans le chat Telegram
+<div class="debug-box">
+  <h3>📋 État Telegram WebApp</h3>
+  <div id="tgStatus"></div>
 </div>
 
-<div class="signal-box signal-wait" id="signalBox">
-  <div>EN ATTENTE</div>
-  <div style="font-size:14px;font-weight:500;margin-top:8px;opacity:.7" id="signalDetail">Appuie sur START</div>
+<div class="debug-box">
+  <h3>🧪 Tests</h3>
+  <button class="btn btn-green" onclick="testSendData()">TEST 1: Envoyer START</button>
+  <button class="btn btn-blue" onclick="testMainButton()">TEST 2: MainButton</button>
+  <button class="btn btn-orange" onclick="testFallback()">TEST 3: Fallback URL</button>
+  <button class="btn btn-red" onclick="clearConsole()">Effacer logs</button>
 </div>
 
-<div class="grid">
-  <button class="btn btn-green btn-big" onclick="sendAction('start')">
-    <span class="icon">▶️</span>
-    <span>START</span>
-  </button>
-  <button class="btn btn-red btn-big" onclick="sendAction('stop')">
-    <span class="icon">⏹️</span>
-    <span>STOP</span>
-  </button>
-  <button class="btn btn-blue btn-full" onclick="sendAction('signal')">
-    <span class="icon">🎯</span>
-    <span>DEMANDER SIGNAL NOW</span>
-  </button>
+<div class="debug-box">
+  <h3>🖥️ Console JavaScript</h3>
+  <div id="console"></div>
 </div>
-
-<div class="section">
-  <div class="section-title">⚡ Actions Rapides</div>
-  <div class="grid">
-    <button class="btn btn-orange" onclick="sendAction('reset')">
-      <span class="icon">🔄</span>
-      <span>RESET</span>
-      <span class="label">Nouvelle paire</span>
-    </button>
-    <button class="btn btn-cyan" onclick="sendAction('status')">
-      <span class="icon">📊</span>
-      <span>STATUS</span>
-    </button>
-    <button class="btn btn-gray" onclick="sendAction('testcall')">
-      <span class="icon">🧪</span>
-      <span>TEST CALL</span>
-    </button>
-    <button class="btn btn-gray" onclick="sendAction('testput')">
-      <span class="icon">🧪</span>
-      <span>TEST PUT</span>
-    </button>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-title">⏱️ Timers Configurables</div>
-  <div class="input-group">
-    <label>1MIN:</label>
-    <input type="number" id="timer1" value="58" min="0">
-    <button class="btn btn-blue btn-ok" onclick="sendTimer('1min')">✓</button>
-  </div>
-  <div class="input-group">
-    <label>2MIN:</label>
-    <input type="number" id="timer2" value="118" min="0">
-    <button class="btn btn-blue btn-ok" onclick="sendTimer('2min')">✓</button>
-  </div>
-  <div class="input-group">
-    <label>PLAT:</label>
-    <input type="number" id="timerPlat" value="5" min="0">
-    <button class="btn btn-blue btn-ok" onclick="sendTimer('plat')">✓</button>
-  </div>
-</div>
-
-<div class="section">
-  <div class="section-title">📍 Positions Clics Auto</div>
-  <div class="pos-grid" id="posGrid">
-    <div class="pos-item"><div class="name">CALL</div><div class="val missing" id="posCall">❌</div></div>
-    <div class="pos-item"><div class="name">PUT</div><div class="val missing" id="posPut">❌</div></div>
-    <div class="pos-item"><div class="name">MENU</div><div class="val missing" id="posMenu">❌</div></div>
-    <div class="pos-item"><div class="name">1MIN</div><div class="val missing" id="pos1min">❌</div></div>
-    <div class="pos-item"><div class="name">2MIN</div><div class="val missing" id="pos2min">❌</div></div>
-  </div>
-  <div class="pos-btn-grid">
-    <button class="btn btn-green" onclick="setPosition('call')">📍 SET CALL</button>
-    <button class="btn btn-red" onclick="setPosition('put')">📍 SET PUT</button>
-    <button class="btn btn-orange" onclick="setPosition('menu')">📍 SET MENU</button>
-    <button class="btn btn-blue" onclick="setPosition('1min')">📍 SET 1MIN</button>
-    <button class="btn btn-purple" onclick="setPosition('2min')" style="grid-column:1/-1">📍 SET 2MIN</button>
-  </div>
-</div>
-
-<div id="toast"></div>
 
 <script>
 // ==========================================
-// TELEGRAM WEB APP INIT
+// CONSOLE CUSTOM
 // ==========================================
-const tg = window.Telegram.WebApp;
-tg.expand();
-tg.ready();
-
-// ==========================================
-// FONCTIONS DE COMMANDE
-// ==========================================
-
-/**
- * Envoie une action simple au bot via tg.sendData()
- * NOTE: tg.sendData() ferme la Mini App (comportement normal Telegram)
- */
-function sendAction(action) {
-    console.log("[MiniApp] Envoi action:", action);
-
-    // Construire le payload JSON
-    const payload = JSON.stringify({action: action});
-    console.log("[MiniApp] Payload:", payload);
-
-    try {
-        // Feedback visuel
-        showToast(action.toUpperCase() + " envoyé!");
-
-        // Haptic feedback
-        if (tg.HapticFeedback) {
-            tg.HapticFeedback.impactOccurred('medium');
-        }
-
-        // Envoyer les données au bot
-        tg.sendData(payload);
-        console.log("[MiniApp] sendData() appelé avec succès");
-
-        // IMPORTANT: tg.sendData() ferme automatiquement la Mini App
-        // C'est le comportement normal de Telegram
-        // Le bot recevra les données et répondra dans le chat
-
-    } catch (err) {
-        console.error("[MiniApp] ERREUR sendData:", err);
-        showToast("❌ Erreur: " + err.message, 3000, true);
-    }
+function log(msg, type) {
+    const div = document.getElementById('console');
+    const now = new Date().toLocaleTimeString();
+    const cls = type === 'err' ? 'err' : type === 'ok' ? 'ok' : 'info';
+    div.innerHTML += '<div class="' + cls + '">[' + now + '] ' + msg + '</div>';
+    div.scrollTop = div.scrollHeight;
+    console.log('[V30]', msg);
 }
 
-/**
- * Envoie un timer configuré
- */
-function sendTimer(type) {
-    const inputId = type === '1min' ? 'timer1' : type === '2min' ? 'timer2' : 'timerPlat';
-    const val = document.getElementById(inputId).value;
-    const numVal = parseInt(val);
-
-    if (isNaN(numVal) || numVal < 0) {
-        showToast("❌ Valeur invalide", 2000, true);
-        return;
-    }
-
-    const payload = JSON.stringify({
-        action: 'timer' + type,
-        value: numVal
-    });
-
-    console.log("[MiniApp] Timer " + type + " = " + numVal);
-    showToast("⏱️ Timer " + type + " = " + numVal + "s");
-
-    if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('light');
-    }
-
-    tg.sendData(payload);
-}
-
-/**
- * Demande à l'utilisateur de cliquer sur la position à capturer
- */
-function setPosition(type) {
-    console.log("[MiniApp] Configuration position:", type);
-
-    if (tg.HapticFeedback) {
-        tg.HapticFeedback.impactOccurred('medium');
-    }
-
-    // Afficher un overlay pour capturer le clic
-    const overlay = document.createElement('div');
-    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:9999;cursor:crosshair;background:rgba(13,17,23,0.85);display:flex;align-items:center;justify-content:center;';
-    overlay.innerHTML = `
-        <div style="background:#161b22;padding:24px 32px;border-radius:16px;border:2px solid #58a6ff;text-align:center;max-width:280px">
-            <div style="font-size:40px;margin-bottom:12px">🖱️</div>
-            <div style="font-size:18px;font-weight:700;color:#58a6ff;margin-bottom:8px">Clique sur ${type.toUpperCase()}</div>
-            <div style="font-size:13px;color:#8b949e;line-height:1.5">Dans Pocket Option,<br>clique sur le bouton ${type.toUpperCase()}</div>
-            <div style="margin-top:16px;font-size:11px;color:#f85149">❌ Appuie sur ÉCHAP pour annuler</div>
-        </div>
-    `;
-
-    // Capturer le clic
-    overlay.addEventListener('click', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Calculer les coordonnées (prendre en compte le devicePixelRatio)
-        const x = Math.round(e.clientX * window.devicePixelRatio);
-        const y = Math.round(e.clientY * window.devicePixelRatio);
-
-        console.log("[MiniApp] Position capturée:", type, x, y);
-
-        // Envoyer au bot
-        const payload = JSON.stringify({
-            action: 'setpos',
-            type: type,
-            x: x,
-            y: y
-        });
-
-        document.body.removeChild(overlay);
-        showToast("✅ " + type.toUpperCase() + " (" + x + "," + y + ")");
-
-        if (tg.HapticFeedback) {
-            tg.HapticFeedback.notificationOccurred('success');
-        }
-
-        tg.sendData(payload);
-    });
-
-    // Annuler avec ÉCHAP
-    function escHandler(e) {
-        if (e.key === 'Escape') {
-            document.body.removeChild(overlay);
-            document.removeEventListener('keydown', escHandler);
-            showToast("❌ Annulé", 1500, true);
-        }
-    }
-    document.addEventListener('keydown', escHandler);
-
-    document.body.appendChild(overlay);
-}
-
-// ==========================================
-// UI HELPERS
-// ==========================================
-function showToast(msg, duration, isError) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = isError ? 'show error' : 'show';
-    setTimeout(() => t.className = '', duration || 2000);
+function clearConsole() {
+    document.getElementById('console').innerHTML = '';
 }
 
 // ==========================================
 // INIT
 // ==========================================
-console.log("[MiniApp] V30 Control chargée");
-console.log("[MiniApp] Telegram WebApp version:", tg.version);
-console.log("[MiniApp] Platform:", tg.platform);
+log('=== V30 DEBUG CHARGÉ ===', 'info');
 
-// Vérifier que sendData est disponible
-if (typeof tg.sendData === 'function') {
-    console.log("[MiniApp] ✅ tg.sendData() disponible");
+// Vérifier si le script Telegram est chargé
+if (typeof window.Telegram === 'undefined') {
+    log('❌ window.Telegram est UNDEFINED', 'err');
+    document.getElementById('tgStatus').innerHTML = '<div class="status-ko">❌ Script Telegram non chargé</div>';
 } else {
-    console.error("[MiniApp] ❌ tg.sendData() NON disponible!");
-    showToast("❌ Erreur: sendData non disponible", 5000, true);
+    log('✅ window.Telegram existe', 'ok');
 }
 
-// Définir la couleur du header
-tg.setHeaderColor('#0d1117');
-tg.setBackgroundColor('#0d1117');
+const tg = window.Telegram.WebApp;
 
-// MainButton (optionnel - bouton fixe en bas)
+// ==========================================
+// VÉRIFICATIONS
+// ==========================================
+const statusDiv = document.getElementById('tgStatus');
+let html = '';
+
+// 1. tg existe?
+if (tg) {
+    html += '<div class="status-ok">✅ tg = WebApp chargé</div>';
+    log('✅ tg = WebApp', 'ok');
+} else {
+    html += '<div class="status-ko">❌ tg = WebApp NULL</div>';
+    log('❌ tg = WebApp NULL', 'err');
+}
+
+// 2. tg.initDataUnsafe?
+if (tg.initDataUnsafe) {
+    html += '<div class="status-ok">✅ initDataUnsafe existe</div>';
+    log('✅ initDataUnsafe OK', 'ok');
+    log('   user_id: ' + (tg.initDataUnsafe.user ? tg.initDataUnsafe.user.id : 'N/A'), 'info');
+} else {
+    html += '<div class="status-ko">❌ initDataUnsafe NULL</div>';
+    log('❌ initDataUnsafe NULL', 'err');
+}
+
+// 3. tg.sendData?
+if (typeof tg.sendData === 'function') {
+    html += '<div class="status-ok">✅ sendData() est une fonction</div>';
+    log('✅ sendData() = fonction', 'ok');
+} else {
+    html += '<div class="status-ko">❌ sendData() NON disponible</div>';
+    log('❌ sendData() = ' + typeof tg.sendData, 'err');
+}
+
+// 4. tg.MainButton?
 if (tg.MainButton) {
-    tg.MainButton.setText("🚀 DEMANDER SIGNAL");
-    tg.MainButton.setParams({color: '#238636', text_color: '#ffffff'});
-    tg.MainButton.onClick(function() {
-        sendAction('signal');
-    });
-    tg.MainButton.show();
+    html += '<div class="status-ok">✅ MainButton existe</div>';
+    log('✅ MainButton OK', 'ok');
+} else {
+    html += '<div class="status-ko">❌ MainButton NULL</div>';
+    log('❌ MainButton NULL', 'err');
 }
+
+// 5. Version
+html += '<div class="status-warn">ℹ️ Version: ' + (tg.version || 'N/A') + '</div>';
+html += '<div class="status-warn">ℹ️ Platform: ' + (tg.platform || 'N/A') + '</div>';
+log('ℹ️ Version: ' + tg.version, 'info');
+log('ℹ️ Platform: ' + tg.platform, 'info');
+
+statusDiv.innerHTML = html;
+
+// Expand
+try {
+    tg.expand();
+    tg.ready();
+    log('✅ tg.expand() + ready() OK', 'ok');
+} catch(e) {
+    log('❌ Erreur expand/ready: ' + e.message, 'err');
+}
+
+// ==========================================
+// TEST 1: sendData direct
+// ==========================================
+function testSendData() {
+    log('--- TEST 1: sendData ---', 'info');
+    const payload = JSON.stringify({action: 'start', test: true});
+    log('Payload: ' + payload, 'info');
+
+    try {
+        log('Appel tg.sendData()...', 'info');
+        tg.sendData(payload);
+        log('✅ sendData() exécuté (la fenêtre devrait se fermer)', 'ok');
+    } catch(e) {
+        log('❌ ERREUR sendData: ' + e.message, 'err');
+        log('   Stack: ' + e.stack, 'err');
+    }
+}
+
+// ==========================================
+// TEST 2: MainButton
+// ==========================================
+function testMainButton() {
+    log('--- TEST 2: MainButton ---', 'info');
+
+    try {
+        tg.MainButton.setText('🚀 ENVOYER START');
+        tg.MainButton.setParams({color: '#238636', text_color: '#ffffff'});
+        tg.MainButton.show();
+        log('✅ MainButton affiché', 'ok');
+
+        tg.MainButton.onClick(function() {
+            log('MainButton cliqué!', 'ok');
+            const payload = JSON.stringify({action: 'start', via: 'mainbutton'});
+            try {
+                tg.sendData(payload);
+                log('✅ sendData via MainButton OK', 'ok');
+            } catch(e) {
+                log('❌ Erreur: ' + e.message, 'err');
+            }
+        });
+        log('✅ onClick attaché', 'ok');
+    } catch(e) {
+        log('❌ ERREUR MainButton: ' + e.message, 'err');
+    }
+}
+
+// ==========================================
+// TEST 3: Fallback (si sendData ne marche pas)
+// ==========================================
+function testFallback() {
+    log('--- TEST 3: Fallback ---', 'info');
+    log('Si sendData ne marche pas, utilise les commandes texte:', 'info');
+    log('/start /stop /reset dans Telegram', 'info');
+}
+
+// ==========================================
+// GESTION ERREURS GLOBALES
+// ==========================================
+window.onerror = function(msg, url, line, col, error) {
+    log('❌ JS ERROR: ' + msg + ' (ligne ' + line + ')', 'err');
+    return false;
+};
+
+window.addEventListener('unhandledrejection', function(e) {
+    log('❌ PROMISE REJECTED: ' + e.reason, 'err');
+});
+
+log('=== INIT TERMINÉ ===', 'info');
 </script>
 </body>
 </html>
